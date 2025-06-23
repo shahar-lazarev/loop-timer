@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loop Timer</title>
+  <!-- Import Google Fonts and Materialize CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.0.0/dist/css/materialize.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      padding: 2rem;
+      background: linear-gradient(135deg, #f0f4f8, #d9e4f5);
+      /* transition: background-color 0.2s, background 0.2s; */
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    .input-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .time-input {
+      font-size: 2rem;
+      width: 4rem;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 0.2rem;
+    }
+    #time-display {
+      font-size: 4rem;
+      margin: 2rem 0;
+      font-weight: bold;
+      color: #1e88e5;
+    }
+    .red-flash {
+      background: #ffebee !important;
+    }
+    @media (max-width: 600px) {
+      .time-input {
+        font-size: 1.5rem;
+        width: 3.5rem;
+      }
+      #time-display {
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Input View -->
+    <div id="input-view">
+      <h4 class="center-align">Set Loop Timer</h4>
+      <div class="input-row">
+        <input id="minutes" class="time-input" type="number" min="0" placeholder="MM">
+        <span style="font-size: 2rem;">:</span>
+        <input id="seconds" class="time-input" type="number" min="0" max="59" placeholder="SS">
+      </div>
+      <div class="center-align">
+        <button class="btn waves-effect waves-light indigo" onclick="startTimer()">Start</button>
+      </div>
+    </div>
+
+    <!-- Timer View -->
+    <div id="timer-view" style="display: none;">
+      <h4 class="center-align">Loop Timer</h4>
+      <div id="time-display" class="center-align">00:00</div>
+      <div class="center-align">
+        <button class="btn waves-effect waves-light blue" onclick="togglePause()"><span id="pause-resume">Pause</span></button>
+        <button class="btn waves-effect waves-light orange" onclick="resetTimer()">Reset</button>
+        <button class="btn waves-effect waves-light grey" onclick="goBack()">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Harp sound -->
+  <audio id="beep" preload="auto">
+    <source src='https://raw.githubusercontent.com/shahar-lazarev/loop-timer/main/harp-flourish.ogg' type="audio/ogg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    let originalDuration = 0;
+    let remainingTime = 0;
+    let intervalId = null;
+    let paused = false;
+
+    function startTimer() {
+      const min = parseInt(document.getElementById('minutes').value) || 0;
+      const sec = parseInt(document.getElementById('seconds').value) || 0;
+      originalDuration = min * 60 + sec;
+      if (originalDuration <= 0) return M.toast({html: 'Enter a valid time!'});
+
+      remainingTime = originalDuration;
+      document.getElementById('input-view').style.display = 'none';
+      document.getElementById('timer-view').style.display = 'block';
+      updateDisplay();
+      runTimer();
+    }
+
+    function runTimer() {
+      intervalId = setInterval(() => {
+        if (!paused) {
+          remainingTime--;
+          if (remainingTime < 0) {
+            beep();
+            flashRed();
+            remainingTime = originalDuration;
+          }
+          updateDisplay();
+        }
+      }, 1000);
+    }
+
+    function updateDisplay() {
+      const min = Math.floor(remainingTime / 60).toString().padStart(2, '0');
+      const sec = (remainingTime % 60).toString().padStart(2, '0');
+      const timeString = `${min}:${sec}`;
+      document.getElementById('time-display').textContent = timeString;
+      document.title = `${timeString} - Loop Timer`;
+    }
+
+    function togglePause() {
+      paused = !paused;
+      document.getElementById('pause-resume').textContent = paused ? 'Resume' : 'Pause';
+    }
+
+    function resetTimer() {
+      remainingTime = originalDuration;
+      updateDisplay();
+    }
+
+    function goBack() {
+      clearInterval(intervalId);
+      paused = false;
+      document.getElementById('pause-resume').textContent = 'Pause';
+      document.title = 'Loop Timer';
+      document.getElementById('input-view').style.display = 'block';
+      document.getElementById('timer-view').style.display = 'none';
+    }
+
+    function beep() {
+      const sound = document.getElementById('beep');
+      sound.volume = 0.5;
+      sound.currentTime = 0;
+      sound.play();
+
+      setTimeout(() => {
+        sound.pause();
+        sound.currentTime = 0;
+      }, 2000);
+    }
+
+    function flashRed() {
+      document.body.classList.add('red-flash');
+      setTimeout(() => {
+        document.body.classList.remove('red-flash');
+      }, 500);
+    }
+  </script>
+
+  <!-- Import Materialize JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.0.0/dist/js/materialize.min.js"></script>
+</body>
+</html>
