@@ -38,9 +38,15 @@
     }
     #time-display {
       font-size: 4rem;
-      margin: 2rem 0;
+      margin: 2rem 0 0.5rem 0;
       font-weight: bold;
       color: #1e88e5;
+    }
+    #elapsed-display {
+      font-size: 2rem;
+      color: black;
+      text-align: center;
+      margin-bottom: 2rem;
     }
     #flash-overlay {
       position: fixed;
@@ -68,6 +74,9 @@
       #time-display {
         font-size: 3rem;
       }
+      #elapsed-display {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
@@ -93,6 +102,7 @@
     <div id="timer-view" style="display: none;">
       <h4 class="center-align">Loop Timer</h4>
       <div id="time-display" class="center-align">00:00</div>
+      <div id="elapsed-display">00:00</div>
       <div class="center-align">
         <button class="btn waves-effect waves-light blue" onclick="togglePause()"><span id="pause-resume">Pause</span></button>
         <button class="btn waves-effect waves-light orange" onclick="resetTimer()">Reset</button>
@@ -110,6 +120,7 @@
   <script>
     let originalDuration = 0;
     let remainingTime = 0;
+    let elapsedTime = 0;
     let intervalId = null;
     let paused = false;
 
@@ -120,6 +131,7 @@
       if (originalDuration <= 0) return M.toast({html: 'Enter a valid time!'});
 
       remainingTime = originalDuration;
+      elapsedTime = 0;
       document.getElementById('input-view').style.display = 'none';
       document.getElementById('timer-view').style.display = 'block';
       updateDisplay();
@@ -130,7 +142,8 @@
       intervalId = setInterval(() => {
         if (!paused) {
           remainingTime--;
-          if (remainingTime < 0) {
+          elapsedTime++;
+          if (remainingTime === 0) {
             beep();
             flashRed();
             remainingTime = originalDuration;
@@ -146,6 +159,10 @@
       const timeString = `${min}:${sec}`;
       document.getElementById('time-display').textContent = timeString;
       document.title = `${timeString} - Loop Timer`;
+
+      const elapsedMin = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+      const elapsedSec = (elapsedTime % 60).toString().padStart(2, '0');
+      document.getElementById('elapsed-display').textContent = `${elapsedMin}:${elapsedSec}`;
     }
 
     function togglePause() {
@@ -155,6 +172,7 @@
 
     function resetTimer() {
       remainingTime = originalDuration;
+      elapsedTime = 0;
       updateDisplay();
     }
 
@@ -169,7 +187,7 @@
 
     function beep() {
       const sound = document.getElementById('beep');
-      sound.volume = 0.3;
+      sound.volume = 0.5;
       sound.currentTime = 0;
       sound.play();
 
