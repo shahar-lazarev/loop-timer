@@ -48,6 +48,9 @@
       text-align: center;
       margin-bottom: 2rem;
     }
+    #volume-control {
+      margin-bottom: 2rem;
+    }
     #flash-overlay {
       position: fixed;
       top: 0;
@@ -92,6 +95,10 @@
         <input id="minutes" class="time-input" type="number" min="0" placeholder="MM">
         <span style="font-size: 2rem;">:</span>
         <input id="seconds" class="time-input" type="number" min="0" max="59" placeholder="SS">
+      </div>
+      <div id="volume-control">
+        <label for="volume">Volume</label>
+        <input type="range" id="volume" min="0" max="1" step="0.025" value="0.5">
       </div>
       <div class="center-align">
         <button class="btn waves-effect waves-light indigo" onclick="startTimer()">Start</button>
@@ -143,7 +150,7 @@
         if (!paused) {
           remainingTime--;
           elapsedTime++;
-          if (remainingTime === 0) {
+          if (remainingTime < 1) {
             beep();
             flashRed();
             remainingTime = originalDuration;
@@ -187,7 +194,8 @@
 
     function beep() {
       const sound = document.getElementById('beep');
-      sound.volume = 0.5;
+      const volumeControl = document.getElementById('volume');
+      sound.volume = parseFloat(volumeControl.value);
       sound.currentTime = 0;
       sound.play();
 
