@@ -38,15 +38,35 @@
     }
     #time-display {
       font-size: 4rem;
-      margin: 2rem 0 0.5rem 0;
+      margin: 1.5rem 0 1.5rem 0;
       font-weight: bold;
       color: #1e88e5;
     }
     #elapsed-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-size: 2rem;
       color: black;
-      text-align: center;
       margin-bottom: 2rem;
+      position: relative;
+      height: 2.5rem;
+    }
+    #elapsed-left,
+    #elapsed-right {
+      min-width: 100px;
+    }
+    #elapsed-left {
+      text-align: right;
+    }
+    #elapsed-right {
+      text-align: left;
+    }
+    #elapsed-separator {
+      padding: 0 1.2rem;
+      text-align: center;
+      min-width: 10px;
+      font-size: 2.5rem;
     }
     #volume-control {
       margin-bottom: 2rem;
@@ -109,7 +129,11 @@
     <div id="timer-view" style="display: none;">
       <h4 class="center-align">Loop Timer</h4>
       <div id="time-display" class="center-align">00:00</div>
-      <div id="elapsed-display">00:00</div>
+      <div id="elapsed-display">
+        <div id="elapsed-left">0 loops</div>
+        <div id="elapsed-separator">|</div>
+        <div id="elapsed-right">00:00</div>
+      </div>
       <div class="center-align">
         <button class="btn waves-effect waves-light blue" onclick="togglePause()"><span id="pause-resume">Pause</span></button>
         <button class="btn waves-effect waves-light orange" onclick="resetTimer()">Reset</button>
@@ -128,6 +152,7 @@
     let originalDuration = 0;
     let remainingTime = 0;
     let elapsedTime = 0;
+    let loopCount = 0;
     let intervalId = null;
     let paused = false;
 
@@ -139,6 +164,7 @@
 
       remainingTime = originalDuration;
       elapsedTime = 0;
+      loopCount = 0;
       document.getElementById('input-view').style.display = 'none';
       document.getElementById('timer-view').style.display = 'block';
       updateDisplay();
@@ -153,6 +179,7 @@
           if (remainingTime < 1) {
             beep();
             flashRed();
+            loopCount++;
             remainingTime = originalDuration;
           }
           updateDisplay();
@@ -169,7 +196,8 @@
 
       const elapsedMin = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
       const elapsedSec = (elapsedTime % 60).toString().padStart(2, '0');
-      document.getElementById('elapsed-display').textContent = `${elapsedMin}:${elapsedSec}`;
+      document.getElementById('elapsed-left').textContent = `${loopCount} ${loopCount == 1 ? "loop" : "loops"}`;
+      document.getElementById('elapsed-right').textContent = `${elapsedMin}:${elapsedSec}`;
     }
 
     function togglePause() {
@@ -180,12 +208,14 @@
     function resetTimer() {
       remainingTime = originalDuration;
       elapsedTime = 0;
+      loopCount = 0;
       updateDisplay();
     }
 
     function goBack() {
       clearInterval(intervalId);
       paused = false;
+      loopCount = 0;
       document.getElementById('pause-resume').textContent = 'Pause';
       document.title = 'Loop Timer';
       document.getElementById('input-view').style.display = 'block';
@@ -208,7 +238,7 @@
     function flashRed() {
       const overlay = document.getElementById('flash-overlay');
       overlay.classList.remove('red-flash');
-      void overlay.offsetWidth; // Force reflow
+      void overlay.offsetWidth;
       overlay.classList.add('red-flash');
     }
   </script>
